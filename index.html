@@ -21,9 +21,804 @@
 </head>
 <body>
     <div id="root"></div>
+    
     <script type="text/babel">
-        /* Complete app code - too large for single parameter, uploading as artifact */
-        alert('Please download the complete index.html file and upload manually to GitHub');
+        const { useState, useMemo } = React;
+        
+        // Lucide React icons as inline SVGs
+        const Calendar = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        );
+        
+        const Sprout = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <path d="M7 20h10"></path>
+                <path d="M10 20c5.5-2.5.8-6.4 3-10"></path>
+                <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"></path>
+                <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"></path>
+            </svg>
+        );
+        
+        const Clock = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        );
+        
+        const Droplets = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path>
+                <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path>
+            </svg>
+        );
+        
+        const Sun = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2"></path>
+                <path d="M12 20v2"></path>
+                <path d="m4.93 4.93 1.41 1.41"></path>
+                <path d="m17.66 17.66 1.41 1.41"></path>
+                <path d="M2 12h2"></path>
+                <path d="M20 12h2"></path>
+                <path d="m6.34 17.66-1.41 1.41"></path>
+                <path d="m19.07 4.93-1.41 1.41"></path>
+            </svg>
+        );
+        
+        const Users = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        );
+        
+        const TrendingUp = ({ size = 24, style }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+        );
+
+        // Plant database with companion planting
+        const PLANT_DATABASE = [
+          {
+            id: 1,
+            name: "Tomatoes (Heat-Tolerant)",
+            category: "Vegetable",
+            difficulty: "Medium",
+            plantingStart: "10-01",
+            plantingEnd: "02-28",
+            startMethod: "Transplants recommended",
+            daysToHarvest: 77,
+            careNote: "Morning sun, heavy mulch, watch for hornworms",
+            zoneSpecific: "Use heat-tolerant varieties like Phoenix or Heatwave",
+            companions: ["Basil", "Peppers", "Carrots"],
+            avoid: ["Potatoes", "Fennel"]
+          },
+          {
+            id: 2,
+            name: "Sweet Peppers",
+            category: "Vegetable",
+            difficulty: "Easy",
+            plantingStart: "09-15",
+            plantingEnd: "03-15",
+            startMethod: "Start from transplants",
+            daysToHarvest: 75,
+            careNote: "Well-draining soil, consistent water, full sun",
+            zoneSpecific: "Plant in fall for spring harvest, avoid summer heat",
+            companions: ["Tomatoes", "Basil", "Onions"],
+            avoid: ["Beans"]
+          },
+          {
+            id: 3,
+            name: "Lettuce & Greens",
+            category: "Vegetable",
+            difficulty: "Easy",
+            plantingStart: "10-01",
+            plantingEnd: "02-28",
+            startMethod: "Direct seed every 2 weeks",
+            daysToHarvest: 38,
+            careNote: "Afternoon shade crucial, keep soil moist",
+            zoneSpecific: "Succession plant for continuous harvest through winter",
+            companions: ["Carrots", "Radishes", "Strawberries"],
+            avoid: ["Parsley"]
+          },
+          {
+            id: 4,
+            name: "Snap Beans",
+            category: "Vegetable",
+            difficulty: "Easy",
+            plantingStart: "09-01",
+            plantingEnd: "03-31",
+            startMethod: "Direct seed",
+            daysToHarvest: 55,
+            careNote: "Plant in blocks for better pollination",
+            zoneSpecific: "Avoid planting during peak summer heat",
+            companions: ["Corn", "Cucumbers", "Radishes"],
+            avoid: ["Onions", "Garlic"]
+          },
+          {
+            id: 5,
+            name: "Cucumbers",
+            category: "Vegetable",
+            difficulty: "Easy",
+            plantingStart: "09-15",
+            plantingEnd: "03-15",
+            startMethod: "Direct seed or transplants",
+            daysToHarvest: 60,
+            careNote: "Trellis for better air circulation",
+            zoneSpecific: "Fall planting produces best in Zone 10",
+            companions: ["Beans", "Corn", "Radishes"],
+            avoid: ["Melons", "Potatoes"]
+          },
+          {
+            id: 6,
+            name: "Summer Squash",
+            category: "Vegetable",
+            difficulty: "Easy",
+            plantingStart: "02-15",
+            plantingEnd: "04-15",
+            startMethod: "Direct seed",
+            daysToHarvest: 50,
+            careNote: "Give plenty of space, watch for squash bugs",
+            zoneSpecific: "Spring planting only, too hot in summer",
+            companions: ["Corn", "Beans", "Radishes"],
+            avoid: ["Potatoes"]
+          },
+          {
+            id: 7,
+            name: "Sweet Corn",
+            category: "Vegetable",
+            difficulty: "Medium",
+            plantingStart: "02-01",
+            plantingEnd: "04-30",
+            startMethod: "Direct seed in blocks",
+            daysToHarvest: 80,
+            careNote: "Heavy feeder, needs consistent water",
+            zoneSpecific: "Plant early spring for summer harvest",
+            companions: ["Beans", "Squash", "Cucumbers"],
+            avoid: ["Tomatoes"]
+          },
+          {
+            id: 8,
+            name: "Radishes",
+            category: "Vegetable",
+            difficulty: "Easy",
+            plantingStart: "10-15",
+            plantingEnd: "02-28",
+            startMethod: "Direct seed every week",
+            daysToHarvest: 28,
+            careNote: "Fast grower, keep soil loose",
+            zoneSpecific: "Perfect for succession planting through winter",
+            companions: ["Lettuce", "Carrots", "Cucumbers"],
+            avoid: ["Hyssop"]
+          },
+          {
+            id: 9,
+            name: "Basil",
+            category: "Herb",
+            difficulty: "Easy",
+            plantingStart: "03-01",
+            plantingEnd: "09-30",
+            startMethod: "Direct seed or transplants",
+            daysToHarvest: 75,
+            careNote: "Pinch flowers to encourage leaf growth",
+            zoneSpecific: "Grows year-round except coldest weeks",
+            companions: ["Tomatoes", "Peppers"],
+            avoid: ["Rue", "Sage"]
+          },
+          {
+            id: 10,
+            name: "Cilantro",
+            category: "Herb",
+            difficulty: "Easy",
+            plantingStart: "10-01",
+            plantingEnd: "02-28",
+            startMethod: "Direct seed every 3 weeks",
+            daysToHarvest: 58,
+            careNote: "Bolts quickly in heat",
+            zoneSpecific: "Cool season only in Zone 10",
+            companions: ["Tomatoes", "Spinach"],
+            avoid: ["Fennel"]
+          },
+          {
+            id: 11,
+            name: "Mint",
+            category: "Herb",
+            difficulty: "Easy",
+            plantingStart: "Year-round",
+            plantingEnd: "Year-round",
+            startMethod: "Cuttings or divisions",
+            daysToHarvest: 0,
+            careNote: "Grow in containers - very invasive",
+            zoneSpecific: "Thrives in Zone 10, needs containment",
+            companions: ["Cabbage", "Tomatoes"],
+            avoid: ["Parsley"]
+          },
+          {
+            id: 12,
+            name: "Mango Trees",
+            category: "Fruit Tree",
+            difficulty: "Hard",
+            plantingStart: "03-01",
+            plantingEnd: "06-30",
+            startMethod: "Container-grown trees",
+            daysToHarvest: 1095,
+            careNote: "Full sun, well-draining soil crucial",
+            zoneSpecific: "Plant during rainy season for establishment",
+            companions: ["Citrus", "Avocado"],
+            avoid: []
+          },
+          {
+            id: 13,
+            name: "Avocado Trees",
+            category: "Fruit Tree",
+            difficulty: "Hard",
+            plantingStart: "03-01",
+            plantingEnd: "06-30",
+            startMethod: "Grafted trees only",
+            daysToHarvest: 1095,
+            careNote: "Protect from strong winds, good drainage",
+            zoneSpecific: "Choose cold-hardy varieties for Zone 10",
+            companions: ["Mango", "Citrus"],
+            avoid: []
+          },
+          {
+            id: 14,
+            name: "Papaya",
+            category: "Fruit Tree",
+            difficulty: "Medium",
+            plantingStart: "Year-round",
+            plantingEnd: "Year-round",
+            startMethod: "Direct seed or small plants",
+            daysToHarvest: 300,
+            careNote: "Fast-growing, needs space and full sun",
+            zoneSpecific: "Perfect for Zone 10, frost-sensitive",
+            companions: ["Banana"],
+            avoid: []
+          },
+          {
+            id: 15,
+            name: "Citrus (Orange, Lemon)",
+            category: "Fruit Tree",
+            difficulty: "Medium",
+            plantingStart: "03-01",
+            plantingEnd: "06-30",
+            startMethod: "Container-grown trees",
+            daysToHarvest: 730,
+            careNote: "Regular feeding, watch for pests",
+            zoneSpecific: "Plant in spring for summer establishment",
+            companions: ["Mango", "Avocado"],
+            avoid: []
+          }
+        ];
+
+        // Date helper functions
+        const parseDate = (monthDay) => {
+          if (monthDay === "Year-round") return null;
+          const [month, day] = monthDay.split('-').map(Number);
+          const currentYear = new Date().getFullYear();
+          return new Date(currentYear, month - 1, day);
+        };
+
+        const isInPlantingWindow = (plantingStart, plantingEnd) => {
+          if (plantingStart === "Year-round") return true;
+          
+          const today = new Date();
+          const start = parseDate(plantingStart);
+          const end = parseDate(plantingEnd);
+          
+          if (start > end) {
+            return today >= start || today <= end;
+          }
+          
+          return today >= start && today <= end;
+        };
+
+        const calculateHarvestDate = (daysToHarvest) => {
+          if (daysToHarvest === 0) return "Continuous harvest";
+          if (daysToHarvest > 365) {
+            const years = Math.floor(daysToHarvest / 365);
+            return `${years} year${years > 1 ? 's' : ''} to bearing`;
+          }
+          
+          const today = new Date();
+          const harvestDate = new Date(today);
+          harvestDate.setDate(harvestDate.getDate() + daysToHarvest);
+          
+          return harvestDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: harvestDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+          });
+        };
+
+        const getPlantingStatus = (plantingStart, plantingEnd) => {
+          if (plantingStart === "Year-round") return "PLANT ANYTIME";
+          if (isInPlantingWindow(plantingStart, plantingEnd)) return "PLANT NOW";
+          
+          const today = new Date();
+          const start = parseDate(plantingStart);
+          
+          let daysUntil;
+          if (start > today) {
+            daysUntil = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+          } else {
+            const nextYearStart = new Date(start);
+            nextYearStart.setFullYear(today.getFullYear() + 1);
+            daysUntil = Math.ceil((nextYearStart - today) / (1000 * 60 * 60 * 24));
+          }
+          
+          if (daysUntil <= 30) return `WAIT ${daysUntil} DAYS`;
+          return "OFF SEASON";
+        };
+
+        const getUpcomingPlants = () => {
+          const today = new Date();
+          const thirtyDaysOut = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+          
+          return PLANT_DATABASE.filter(plant => {
+            if (plant.plantingStart === "Year-round") return false;
+            
+            const start = parseDate(plant.plantingStart);
+            if (!start) return false;
+            
+            const currentYearStart = new Date(start);
+            const nextYearStart = new Date(start);
+            nextYearStart.setFullYear(today.getFullYear() + 1);
+            
+            return (currentYearStart > today && currentYearStart <= thirtyDaysOut) ||
+                   (nextYearStart > today && nextYearStart <= thirtyDaysOut);
+          }).map(plant => {
+            const start = parseDate(plant.plantingStart);
+            const currentYearStart = new Date(start);
+            const nextYearStart = new Date(start);
+            nextYearStart.setFullYear(today.getFullYear() + 1);
+            
+            const targetDate = currentYearStart > today ? currentYearStart : nextYearStart;
+            const daysUntil = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+            
+            return {
+              ...plant,
+              daysUntil,
+              plantingDate: targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            };
+          }).sort((a, b) => a.daysUntil - b.daysUntil);
+        };
+
+        const getDifficultyColor = (difficulty) => {
+          switch(difficulty) {
+            case 'Easy': return { bg: '#c6f6d5', text: '#22543d' };
+            case 'Medium': return { bg: '#feebc8', text: '#7c2d12' };
+            case 'Hard': return { bg: '#fed7d7', text: '#742a2a' };
+            default: return { bg: '#e2e8f0', text: '#2d3748' };
+          }
+        };
+
+        const Zone10PlantingCalendar = () => {
+          const [selectedCategory, setSelectedCategory] = useState('all');
+          const [emailCapture, setEmailCapture] = useState({ email: '', plant: '' });
+          const [showNotification, setShowNotification] = useState(false);
+          
+          const categories = ['all', 'Vegetable', 'Herb', 'Fruit Tree'];
+          
+          const plantsToPlantNow = useMemo(() => {
+            return PLANT_DATABASE.filter(plant => {
+              const status = getPlantingStatus(plant.plantingStart, plant.plantingEnd);
+              const matchesCategory = selectedCategory === 'all' || plant.category === selectedCategory;
+              return (status === "PLANT NOW" || status === "PLANT ANYTIME") && matchesCategory;
+            });
+          }, [selectedCategory]);
+          
+          const upcomingPlants = useMemo(() => getUpcomingPlants(), []);
+          
+          const handleEmailSubmit = (e) => {
+            e.preventDefault();
+            console.log('Email capture:', emailCapture);
+            setShowNotification(true);
+            setTimeout(() => setShowNotification(false), 3000);
+            setEmailCapture({ email: '', plant: '' });
+          };
+          
+          return React.createElement('div', { style: {
+            minHeight: '100vh',
+            background: '#faf8f3',
+            padding: '20px',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+          }},
+            // Header
+            React.createElement('div', { style: {
+              maxWidth: '1200px',
+              margin: '0 auto 40px',
+              textAlign: 'center',
+              background: '#2d4a2b',
+              padding: '40px 20px',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }},
+              React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px', marginBottom: '12px' }},
+                React.createElement(Sprout, { size: 48, style: { color: '#e67e50' }}),
+                React.createElement('h1', { style: { fontSize: '2.5rem', margin: 0, fontWeight: 700, color: '#faf8f3' }},
+                  'Zone 10 Planting Calendar'
+                )
+              ),
+              React.createElement('p', { style: { fontSize: '1.2rem', color: '#e8f0e8', margin: '8px 0 0 0' }},
+                'What to plant right now in Pinellas County, Florida'
+              ),
+              React.createElement('p', { style: { fontSize: '0.9rem', color: '#a8c5a3', marginTop: '8px' }},
+                'Updated weekly with Pete\'s real-world growing experience'
+              )
+            ),
+            
+            // Category Filter
+            React.createElement('div', { style: {
+              maxWidth: '1200px',
+              margin: '0 auto 30px',
+              display: 'flex',
+              gap: '12px',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }},
+              categories.map(cat =>
+                React.createElement('button', {
+                  key: cat,
+                  onClick: () => setSelectedCategory(cat),
+                  style: {
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: selectedCategory === cat ? 'none' : '2px solid #4a7c59',
+                    background: selectedCategory === cat ? '#4a7c59' : 'transparent',
+                    color: selectedCategory === cat ? '#faf8f3' : '#2d4a2b',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    textTransform: 'capitalize'
+                  }
+                }, cat === 'all' ? 'All Plants' : `${cat}s`)
+              )
+            ),
+            
+            // Plant Now Section
+            React.createElement('div', { style: {
+              maxWidth: '1200px',
+              margin: '0 auto 40px',
+              background: 'white',
+              borderRadius: '12px',
+              padding: '30px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '2px solid #e8f0e8'
+            }},
+              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }},
+                React.createElement(Calendar, { size: 32, style: { color: '#4a7c59' }}),
+                React.createElement('h2', { style: { margin: 0, color: '#2d4a2b', fontSize: '1.8rem', fontWeight: 700 }},
+                  'Plant This Week'
+                )
+              ),
+              
+              plantsToPlantNow.length === 0 
+                ? React.createElement('p', { style: { color: '#5a6c57', fontSize: '1.1rem' }},
+                    'No plants in the selected category are ready to plant this week. Check upcoming plants below!'
+                  )
+                : React.createElement('div', { style: {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                    gap: '24px'
+                  }},
+                    plantsToPlantNow.map(plant => {
+                      const difficultyColor = getDifficultyColor(plant.difficulty);
+                      return React.createElement('div', {
+                        key: plant.id,
+                        style: {
+                          border: '2px solid #e8f0e8',
+                          borderRadius: '12px',
+                          padding: '24px',
+                          background: '#fdfdfb',
+                          transition: 'all 0.2s',
+                          cursor: 'pointer'
+                        },
+                        onMouseEnter: (e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px)';
+                          e.currentTarget.style.boxShadow = '0 8px 16px rgba(45,74,43,0.15)';
+                          e.currentTarget.style.borderColor = '#4a7c59';
+                        },
+                        onMouseLeave: (e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                          e.currentTarget.style.borderColor = '#e8f0e8';
+                        }
+                      },
+                        // Header
+                        React.createElement('div', { style: {
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'start',
+                          marginBottom: '12px',
+                          gap: '12px'
+                        }},
+                          React.createElement('h3', { style: { margin: 0, color: '#2d4a2b', fontSize: '1.3rem', fontWeight: 700, flex: 1 }},
+                            plant.name
+                          ),
+                          React.createElement('span', { style: {
+                            background: '#48bb78',
+                            color: 'white',
+                            padding: '6px 14px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.5px'
+                          }}, 'PLANT NOW')
+                        ),
+                        
+                        // Badges
+                        React.createElement('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }},
+                          React.createElement('span', { style: {
+                            background: '#4a7c59',
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: 600
+                          }}, plant.category),
+                          React.createElement('span', { style: {
+                            background: difficultyColor.bg,
+                            color: difficultyColor.text,
+                            padding: '4px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: 600
+                          }}, plant.difficulty)
+                        ),
+                        
+                        // Planting info
+                        React.createElement('div', { style: { color: '#5a6c57', fontSize: '0.95rem', marginBottom: '16px', lineHeight: '1.6' }},
+                          React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }},
+                            React.createElement(Sprout, { size: 18, style: { color: '#4a7c59', flexShrink: 0 }}),
+                            React.createElement('div', null,
+                              React.createElement('strong', null, 'How: '),
+                              plant.startMethod
+                            )
+                          ),
+                          React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }},
+                            React.createElement(Clock, { size: 18, style: { color: '#4a7c59', flexShrink: 0 }}),
+                            React.createElement('div', null,
+                              React.createElement('strong', null, 'Harvest: '),
+                              plant.daysToHarvest > 0 ? `${plant.daysToHarvest} days` : 'Continuous'
+                            )
+                          ),
+                          React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' }},
+                            React.createElement(TrendingUp, { size: 18, style: { color: '#e67e50', flexShrink: 0 }}),
+                            React.createElement('div', { style: { color: '#2d4a2b', fontWeight: 600 }},
+                              'Ready: ',
+                              calculateHarvestDate(plant.daysToHarvest)
+                            )
+                          )
+                        ),
+                        
+                        // Companion planting
+                        plant.companions.length > 0 && React.createElement('div', { style: {
+                          background: '#e8f5e9',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          marginBottom: '12px',
+                          border: '1px solid #c8e6c9'
+                        }},
+                          React.createElement('div', { style: { display: 'flex', alignItems: 'start', gap: '8px' }},
+                            React.createElement(Users, { size: 16, style: { color: '#4a7c59', marginTop: '2px', flexShrink: 0 }}),
+                            React.createElement('div', { style: { fontSize: '0.9rem' }},
+                              React.createElement('strong', { style: { color: '#2d4a2b' }}, 'Grows well with:'),
+                              React.createElement('div', { style: { color: '#5a6c57', marginTop: '4px' }},
+                                plant.companions.join(', ')
+                              )
+                            )
+                          )
+                        ),
+                        
+                        // Care notes
+                        React.createElement('div', { style: {
+                          background: '#f5f9f5',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          marginBottom: '12px'
+                        }},
+                          React.createElement('div', { style: { display: 'flex', alignItems: 'start', gap: '8px' }},
+                            React.createElement(Droplets, { size: 16, style: { color: '#4299e1', marginTop: '2px', flexShrink: 0 }}),
+                            React.createElement('p', { style: { margin: 0, fontSize: '0.9rem', color: '#2d4a2b', lineHeight: '1.5' }},
+                              React.createElement('strong', null, 'Care: '),
+                              plant.careNote
+                            )
+                          )
+                        ),
+                        
+                        // Zone specific
+                        React.createElement('div', { style: {
+                          background: '#fff8e6',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #ffd699'
+                        }},
+                          React.createElement('div', { style: { display: 'flex', alignItems: 'start', gap: '8px' }},
+                            React.createElement(Sun, { size: 16, style: { color: '#f6ad55', marginTop: '2px', flexShrink: 0 }}),
+                            React.createElement('p', { style: { margin: 0, fontSize: '0.9rem', color: '#744210', lineHeight: '1.5' }},
+                              React.createElement('strong', null, 'Zone 10: '),
+                              plant.zoneSpecific
+                            )
+                          )
+                        )
+                      );
+                    })
+                  )
+            ),
+            
+            // Upcoming plants section
+            upcomingPlants.length > 0 && React.createElement('div', { style: {
+              maxWidth: '1200px',
+              margin: '0 auto 40px',
+              background: 'white',
+              borderRadius: '12px',
+              padding: '30px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '2px solid #e8f0e8'
+            }},
+              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }},
+                React.createElement(Clock, { size: 32, style: { color: '#e67e50' }}),
+                React.createElement('h2', { style: { margin: 0, color: '#2d4a2b', fontSize: '1.8rem', fontWeight: 700 }},
+                  'Coming Soon (Next 30 Days)'
+                )
+              ),
+              
+              React.createElement('div', { style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px'
+              }},
+                upcomingPlants.map(plant =>
+                  React.createElement('div', { key: plant.id, style: {
+                    border: '2px solid #ffd699',
+                    borderRadius: '10px',
+                    padding: '16px',
+                    background: '#fffdf7'
+                  }},
+                    React.createElement('div', { style: {
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '10px'
+                    }},
+                      React.createElement('h4', { style: { margin: 0, color: '#2d4a2b', fontSize: '1.1rem', fontWeight: 600 }},
+                        plant.name
+                      ),
+                      React.createElement('span', { style: {
+                        background: '#e67e50',
+                        color: 'white',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap'
+                      }},
+                        `${plant.daysUntil} days`
+                      )
+                    ),
+                    React.createElement('p', { style: { margin: '8px 0 0 0', color: '#5a6c57', fontSize: '0.9rem' }},
+                      `Plant starting ${plant.plantingDate}`
+                    )
+                  )
+                )
+              )
+            ),
+            
+            // Email signup
+            React.createElement('div', { style: {
+              maxWidth: '600px',
+              margin: '0 auto',
+              background: 'white',
+              borderRadius: '12px',
+              padding: '32px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '2px solid #e8f0e8',
+              textAlign: 'center'
+            }},
+              React.createElement('h3', { style: { color: '#2d4a2b', marginBottom: '12px', fontSize: '1.5rem', fontWeight: 700 }},
+                'Get Planting Reminders'
+              ),
+              React.createElement('p', { style: { color: '#5a6c57', marginBottom: '24px', lineHeight: '1.6' }},
+                'Want to know when a specific plant is ready? We\'ll email you when it\'s time to plant.'
+              ),
+              
+              React.createElement('form', { onSubmit: handleEmailSubmit, style: { display: 'flex', flexDirection: 'column', gap: '14px' }},
+                React.createElement('input', {
+                  type: 'email',
+                  placeholder: 'Your email address',
+                  value: emailCapture.email,
+                  onChange: (e) => setEmailCapture({...emailCapture, email: e.target.value}),
+                  required: true,
+                  style: {
+                    padding: '14px',
+                    borderRadius: '8px',
+                    border: '2px solid #e8f0e8',
+                    fontSize: '1rem',
+                    outline: 'none'
+                  }
+                }),
+                React.createElement('select', {
+                  value: emailCapture.plant,
+                  onChange: (e) => setEmailCapture({...emailCapture, plant: e.target.value}),
+                  required: true,
+                  style: {
+                    padding: '14px',
+                    borderRadius: '8px',
+                    border: '2px solid #e8f0e8',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    background: 'white',
+                    cursor: 'pointer'
+                  }
+                },
+                  React.createElement('option', { value: '' }, 'Select a plant to track'),
+                  PLANT_DATABASE.map(plant =>
+                    React.createElement('option', { key: plant.id, value: plant.name }, plant.name)
+                  )
+                ),
+                React.createElement('button', {
+                  type: 'submit',
+                  style: {
+                    padding: '14px 28px',
+                    background: '#e67e50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1.05rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    letterSpacing: '0.5px'
+                  }
+                }, 'Notify Me When Ready')
+              ),
+              
+              showNotification && React.createElement('div', { style: {
+                marginTop: '16px',
+                padding: '14px',
+                background: '#c6f6d5',
+                color: '#22543d',
+                borderRadius: '8px',
+                fontWeight: 600,
+                border: '1px solid #9ae6b4'
+              }}, '✓ Thanks! We\'ll remind you when it\'s time to plant.')
+            ),
+            
+            // Footer
+            React.createElement('div', { style: {
+              maxWidth: '1200px',
+              margin: '40px auto 0',
+              textAlign: 'center',
+              color: '#5a6c57',
+              fontSize: '0.9rem',
+              padding: '20px'
+            }},
+              React.createElement('p', { style: { marginBottom: '8px', fontWeight: 600 }},
+                'Zone 10 Planting Calendar • Pinellas County, Florida'
+              ),
+              React.createElement('p', { style: { margin: 0, opacity: 0.8 }},
+                'Built with real growing experience by Pete\'s Farm • Updated weekly'
+              )
+            )
+          );
+        };
+
+        // Render
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(Zone10PlantingCalendar));
     </script>
 </body>
 </html>
